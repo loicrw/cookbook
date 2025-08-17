@@ -1,3 +1,3 @@
 .vscode/*
-backend/cookbook_backend/__pycache__/*
+**/__pycache__/*
 *.sqlite3

@@ -1,23 +1,35 @@
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
+import AddRecipeForm from './components/AddRecipeForm';
 
 function App() {
+  const [showAddRecipe, setShowAddRecipe] = useState(false);
+
+  const handleBrowseRecipes = () => {
+    // TODO: Implement browse recipes functionality
+    console.log('Browse recipes clicked');
+  };
+
+  const handleAddRecipe = () => {
+    setShowAddRecipe(true);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Cookbook App</h1>
+        <div className="button-container">
+          <button onClick={handleBrowseRecipes} className="nav-button">
+            Browse Recipes
+          </button>
+          <button onClick={handleAddRecipe} className="nav-button">
+            Add Recipe
+          </button>
+        </div>
       </header>
+      {showAddRecipe && (
+        <AddRecipeForm onClose={() => setShowAddRecipe(false)} />
+      )}
     </div>
   );
 }
