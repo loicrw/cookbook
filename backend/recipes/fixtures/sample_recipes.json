@@ -1,0 +1,85 @@
+[
+  {
+    "model": "recipes.tag",
+    "pk": 1,
+    "fields": {
+      "name": "Vegetarian"
+    }
+  },
+  {
+    "model": "recipes.tag",
+    "pk": 2,
+    "fields": {
+      "name": "Quick"
+    }
+  },
+  {
+    "model": "recipes.tag",
+    "pk": 3,
+    "fields": {
+      "name": "Dessert"
+    }
+  },
+  {
+    "model": "recipes.tag",
+    "pk": 4,
+    "fields": {
+      "name": "Dinner"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 1,
+    "fields": {
+      "title": "Recipe 1",
+      "description": "Description for recipe 1",
+      "servings": 4,
+      "created_at": "2025-09-11T00:00:00Z",
+      "updated_at": "2025-09-11T00:00:00Z",
+      "tags": [1, 2]
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "name": "Ingredient 1",
+      "quantity": "100.00",
+      "unit": "g"
+    }
+  },
+  {
+    "model": "recipes.step",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "description": "Step 1 description",
+      "order": 1
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 2,
+    "fields": {
+      "title": "Recipe 2",
+      "description": "Description for recipe 2",
+      "servings": 2,
+      "created_at": "2025-09-11T00:00:00Z",
+      "updated_at": "2025-09-11T00:00:00Z",
+      "tags": [3]
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 3,
+    "fields": {
+      "title": "Recipe 3",
+      "description": "Description for recipe 3",
+      "servings": 6,
+      "created_at": "2025-09-11T00:00:00Z",
+      "updated_at": "2025-09-11T00:00:00Z",
+      "tags": [4, 1]
+    }
+  }
+]
