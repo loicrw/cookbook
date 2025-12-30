@@ -1,8 +1,19 @@
-# Welcome to your Expo app 👋
+# Welcome to the Cookbook Expo App 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+## Useful commands
+1. Start the app
+
+   ```bash
+   npx expo start
+   ```
+
+1. Publish the app to github pages
+
+   ```bash
+   npm run deploy
+   ``` 
 
 1. Install dependencies
 
@@ -10,11 +21,28 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+## Directory Structure
 
-   ```bash
-   npx expo start
-   ```
+```
+app/
+├── components/            # Reusable UI components
+│   ├── IncrementButton.tsx
+│   ├── ExportButton.tsx
+│   ├── ImportButton.tsx
+│   └── index.ts           # Component exports
+├── constants/             # App constants
+│   └── storage.ts         # Storage-related constants
+├── styles/                # Shared styles
+│   └── common.ts          # Common component styles
+├── types/                 # TypeScript type definitions
+│   └── app.ts             # App data types
+├── utils/                 # Utility functions
+│   ├── local_storage.ts   # AsyncStorage operations
+│   └── fileOperations.ts  # File import/export operations
+└── index.tsx              # Main app component
+```
+
+## Getting started
 
 In the output, you'll find options to open the app in a
 
@@ -24,16 +52,6 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
 ## Learn more
 

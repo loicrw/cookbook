@@ -1,0 +1,1 @@
+export const STORAGE_KEY = "cookbook-data-v1";
