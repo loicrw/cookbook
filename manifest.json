@@ -1,0 +1,11 @@
+{
+    "short_name": "My Cookbook",
+    "name": "My Cookbook",
+    "icons": [
+        {
+            "src": "icon-1024x1024.png",
+            "type": "image/png",
+            "sizes": "1024x1024"
+        }
+    ]
+}
