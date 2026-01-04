@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "My Cookbook",
+    "slug": "My Cookbook",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon-1024x1024.png",
@@ -24,7 +24,9 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon-32x32.png"
+      "favicon": "./assets/images/favicon-32x32.png",
+      "name": "My Cookbook",
+      "shortName": "My Cookbook"
     },
     "plugins": [
       "expo-router",
