@@ -1,11 +1,17 @@
 {
     "short_name": "My Cookbook",
     "name": "My Cookbook",
+    "start_url": "/cookbook/",
+    "display": "standalone",
+    "scope": "/cookbook/",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
     "icons": [
         {
             "src": "icon-1024x1024.png",
             "type": "image/png",
-            "sizes": "1024x1024"
+            "sizes": "1024x1024",
+            "purpose": "any maskable"
         }
     ]
 }
