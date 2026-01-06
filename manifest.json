@@ -8,7 +8,7 @@
     "background_color": "#ffffff",
     "icons": [
         {
-            "src": "icon-1024x1024.png",
+            "src": "icon-1024x1024-v2.png",
             "type": "image/png",
             "sizes": "1024x1024",
             "purpose": "any maskable"
