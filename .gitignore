@@ -1,6 +1,4 @@
-.vscode/*
-**/__pycache__/*
-*.sqlite3
-.env
-node_modules/
-frontend/.vscode/*
+# This file is published to the gh-pages branch, where it overwrites the source
+# repo's .gitignore. That one ignores node_modules/, which silently dropped
+# every file under assets/node_modules/** from the deploy, including all the
+# icon fonts. The published site is build output, so nothing here is ignored.
