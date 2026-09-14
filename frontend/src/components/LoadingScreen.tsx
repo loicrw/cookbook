@@ -10,7 +10,7 @@ import { styles, theme } from "../styles/common";
  * first and the real data a tick later breaks hydration.
  */
 export const LoadingScreen: React.FC = () => (
-  <View style={[styles.screen, loadingStyles.centered]}>
+  <View style={[styles.screen, loadingStyles.centered]} testID="loading-screen">
     <ActivityIndicator color={theme.primary} />
   </View>
 );
