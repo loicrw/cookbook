@@ -9,7 +9,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "deploy": "gh-pages --nojekyll -d dist",
+    "routes": "node ./scripts/generate-route-types.js",
+    "typecheck": "npm run routes && tsc --noEmit",
+    "build": "expo export -p web",
+    "check": "npm run typecheck && npm run lint && npm run build",
+    "deploy": "gh-pages --nojekyll --dotfiles -d dist",
     "predeploy": "expo export -p web"
   },
   "dependencies": {
