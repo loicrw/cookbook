@@ -8,15 +8,19 @@ export type AppData = {
 };
 
 /**
- * The shopping list. No ingredients are stored: they are derived from the
- * cookbook, so editing a recipe updates the list with it.
+ * The shopping list. No recipe ingredients are stored: they are derived from the
+ * cookbook, so editing a recipe updates the list with it. Items added by hand
+ * belong to nothing else, so those are stored.
  */
 export type Basket = {
   /** The recipes on the list, in the order they were added. */
   entries: BasketEntry[];
+  /** Items put on the list by hand, in the order they were added. */
+  manualItems: ManualItem[];
   /**
-   * The `ingredientKey` of every line already ticked off. Stored so that a
-   * reload part-way through a shop does not lose the progress.
+   * The key of every line already ticked off: an `ingredientKey` for a line from
+   * a recipe, a `manualItemKey` for one added by hand. Stored so that a reload
+   * part-way through a shop does not lose the progress.
    */
   ticked: string[];
 };
@@ -25,6 +29,18 @@ export type BasketEntry = {
   recipeId: string;
   /** How many servings to shop for. Defaults to the recipe's own count. */
   servings: number;
+};
+
+/**
+ * One line put on the shopping list by hand. Not necessarily an ingredient, so
+ * the amount and the unit are both optional.
+ */
+export type ManualItem = {
+  id: string;
+  name: string;
+  /** Above 0 when set. Omitted for an item that is not measured. */
+  amount?: number;
+  unit?: string;
 };
 
 export type AppSettings = {

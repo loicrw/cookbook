@@ -4,6 +4,7 @@ import {
   Basket,
   BasketEntry,
   Ingredient,
+  ManualItem,
   Recipe,
   RecipeDraft,
   Step,
@@ -52,7 +53,7 @@ export function emptyStep(order: number): Step {
 }
 
 export function emptyBasket(): Basket {
-  return { entries: [], ticked: [] };
+  return { entries: [], manualItems: [], ticked: [] };
 }
 
 export function defaultSettings(): AppSettings {
@@ -123,6 +124,20 @@ export function ingredientKey(ingredient: Ingredient): string {
   const unit = ingredient.unit?.trim().toLowerCase() ?? "";
   const toTaste = ingredient.amount === "to taste";
   return `${ingredient.name.trim().toLowerCase()}|${unit}|${toTaste}`;
+}
+
+/**
+ * Identifies a hand-added line for its tick and its React key. Two items of the
+ * same name are two separate lines, so this follows the id rather than the text,
+ * and is prefixed so it can never collide with an [[ingredientKey]].
+ */
+export function manualItemKey(item: ManualItem): string {
+  return `manual:${item.id}`;
+}
+
+/** Formats a hand-added line for display, e.g. "2 kg potatoes" or "bin bags". */
+export function formatManualItem(item: ManualItem): string {
+  return [item.amount, item.unit?.trim(), item.name].filter(Boolean).join(" ");
 }
 
 /** Two decimals is plenty for a shopping list, and dodges binary float drift. */
@@ -370,9 +385,29 @@ function normalizeBasketEntry(
   return { recipeId, servings: Math.max(1, servings) };
 }
 
+/** Reads one hand-added line, or returns null if it has no name to show. */
+function normalizeManualItem(raw: unknown): ManualItem | null {
+  if (!isRecord(raw)) return null;
+
+  const name = asString(raw.name).trim();
+  if (!name) return null;
+
+  const item: ManualItem = { id: asString(raw.id).trim() || createId(), name };
+
+  const parsed = typeof raw.amount === "string" ? Number(raw.amount) : raw.amount;
+  if (typeof parsed === "number" && Number.isFinite(parsed) && parsed > 0) {
+    item.amount = parsed;
+  }
+
+  const unit = asString(raw.unit).trim();
+  if (unit) item.unit = unit;
+
+  return item;
+}
+
 /**
  * Drops basket entries that no longer point at a recipe in the cookbook, and
- * ticks whose ingredient is no longer on the list.
+ * ticks whose line is no longer on the list.
  */
 function normalizeBasket(raw: unknown, recipes: Recipe[]): Basket {
   if (!isRecord(raw)) return emptyBasket();
@@ -396,16 +431,48 @@ function normalizeBasket(raw: unknown, recipes: Recipe[]): Basket {
     }
   }
 
-  const onTheList = new Set(
-    basketIngredients(recipes, entries).map(ingredientKey)
-  );
+  const manualItems = Array.isArray(raw.manualItems)
+    ? withUniqueManualIds(
+        raw.manualItems
+          .map(normalizeManualItem)
+          .filter((item): item is ManualItem => !!item)
+      )
+    : [];
+
+  const onTheList = basketKeys(recipes, entries, manualItems);
   const ticked = Array.isArray(raw.ticked)
     ? raw.ticked.filter(
         (key): key is string => typeof key === "string" && onTheList.has(key)
       )
     : [];
 
-  return { entries, ticked: [...new Set(ticked)] };
+  return { entries, manualItems, ticked: [...new Set(ticked)] };
+}
+
+/** Ensures no two hand-added lines share an id, so their ticks stay distinct. */
+function withUniqueManualIds(items: ManualItem[]): ManualItem[] {
+  const used = new Set<string>();
+  return items.map((item) => {
+    if (!used.has(item.id)) {
+      used.add(item.id);
+      return item;
+    }
+    const id = createId();
+    used.add(id);
+    return { ...item, id };
+  });
+}
+
+/** Every tick key a basket can legitimately hold, recipe lines and manual both. */
+export function basketKeys(
+  recipes: Recipe[],
+  entries: BasketEntry[],
+  manualItems: ManualItem[]
+): Set<string> {
+  return new Set([
+    ...basketIngredients(recipes, entries).map(ingredientKey),
+    ...manualItems.map(manualItemKey),
+  ]);
 }
 
 function normalizeSettings(raw: unknown, storedVersion: number): AppSettings {

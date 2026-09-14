@@ -2,7 +2,13 @@ import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "@/src/context/AppDataContext";
-import { scaleFont, theme } from "@/src/styles/common";
+import { scaleFont, spacing, theme } from "@/src/styles/common";
+
+/**
+ * Lifts the bar clear of the bottom edge. The safe-area inset alone leaves the
+ * icons sitting in the curve of a rounded screen, where they read as squashed.
+ */
+const BOTTOM_LIFT = spacing.sm;
 
 /** The bottom bar: recipes list, the basket, the add-recipe flow, and settings. */
 export default function TabsLayout() {
@@ -29,8 +35,8 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontSize: scaleFont(11, fontScale) },
         tabBarStyle: {
           backgroundColor: theme.surface,
-          height: scaleFont(54, fontScale) + insets.bottom,
-          paddingBottom: insets.bottom,
+          height: scaleFont(54, fontScale) + insets.bottom + BOTTOM_LIFT,
+          paddingBottom: insets.bottom + BOTTOM_LIFT,
         },
       }}
     >

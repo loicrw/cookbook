@@ -10,20 +10,23 @@ import React, {
 import {
   AppData,
   AppSettings,
+  Basket,
   BasketEntry,
   Ingredient,
+  ManualItem,
   Recipe,
 } from "../types/app";
 import { FONT_SIZE_LEVELS } from "../constants/settings";
 import { loadAppData, saveAppData } from "../utils/local_storage";
 import {
   basketIngredients,
+  basketKeys,
   collectIngredientNames,
   collectTags,
   collectUnits,
+  createId,
   emptyAppData,
   emptyBasket,
-  ingredientKey,
   withUniqueIds,
 } from "../utils/recipes";
 
@@ -140,7 +143,7 @@ export function useRecipes(): RecipesValue {
             (entry) => entry.recipeId !== id
           );
           return {
-            basket: prunedBasket(recipes, entries, current.basket.ticked),
+            basket: prunedBasket(recipes, { ...current.basket, entries }),
             recipes,
           };
         }),
@@ -157,12 +160,16 @@ export function useRecipes(): RecipesValue {
               : recipe
           )
         ),
-      // Every id the basket referred to is gone with the old cookbook.
+      // Every recipe the basket referred to is gone with the old cookbook, but
+      // items added by hand belong to nobody, so they stay on the list.
       replaceRecipes: (incoming) =>
-        update(() => ({
-          basket: emptyBasket(),
-          recipes: withUniqueIds(incoming),
-        })),
+        update((current) => {
+          const recipes = withUniqueIds(incoming);
+          return {
+            basket: prunedBasket(recipes, { ...current.basket, entries: [] }),
+            recipes,
+          };
+        }),
       updateRecipe: (recipe) =>
         mutate((current) =>
           current.map((existing) =>
@@ -174,18 +181,15 @@ export function useRecipes(): RecipesValue {
 }
 
 /**
- * Rebuilds a basket around a new set of entries, dropping the ticks of lines
- * that the change has taken off the shopping list.
+ * Settles a changed basket, dropping the ticks of lines that the change has
+ * taken off the shopping list.
  */
-function prunedBasket(
-  recipes: Recipe[],
-  entries: BasketEntry[],
-  ticked: string[]
-) {
-  const onTheList = new Set(
-    basketIngredients(recipes, entries).map(ingredientKey)
-  );
-  return { entries, ticked: ticked.filter((key) => onTheList.has(key)) };
+function prunedBasket(recipes: Recipe[], basket: Basket): Basket {
+  const onTheList = basketKeys(recipes, basket.entries, basket.manualItems);
+  return {
+    ...basket,
+    ticked: basket.ticked.filter((key) => onTheList.has(key)),
+  };
 }
 
 /** One recipe on the shopping list, with the servings it was added for. */
@@ -201,11 +205,16 @@ type BasketValue = {
   loading: boolean;
   /** The recipes in the basket, in the order they were added. */
   items: BasketItem[];
-  /** The `ingredientKey` of every line already ticked off. */
+  /** The lines added by hand, in the order they were added. */
+  manualItems: ManualItem[];
+  /** The key of every line already ticked off. */
   ticked: Set<string>;
+  /** Puts a line on the list by hand. The amount and the unit are optional. */
+  addManualItem: (item: Omit<ManualItem, "id">) => void;
   /** Adds a recipe, or restates one already on the list for new servings. */
   addRecipe: (recipeId: string, servings: number) => void;
   clear: () => void;
+  removeManualItem: (id: string) => void;
   removeRecipe: (recipeId: string) => void;
   /** The servings a recipe is on the list for, or undefined if it is not. */
   servingsFor: (recipeId: string) => number | undefined;
@@ -227,18 +236,36 @@ export function useBasket(): BasketValue {
 
     const setEntries = (next: (current: BasketEntry[]) => BasketEntry[]) =>
       update((current) => ({
-        basket: prunedBasket(
-          current.recipes,
-          next(current.basket.entries),
-          current.basket.ticked
-        ),
+        basket: prunedBasket(current.recipes, {
+          ...current.basket,
+          entries: next(current.basket.entries),
+        }),
+      }));
+
+    const setManualItems = (next: (current: ManualItem[]) => ManualItem[]) =>
+      update((current) => ({
+        basket: prunedBasket(current.recipes, {
+          ...current.basket,
+          manualItems: next(current.basket.manualItems),
+        }),
       }));
 
     return {
       ingredients: basketIngredients(recipes, basket.entries),
       items,
       loading,
+      manualItems: basket.manualItems,
       ticked: new Set(basket.ticked),
+      addManualItem: ({ amount, name, unit }) =>
+        setManualItems((current) => [
+          ...current,
+          {
+            id: createId(),
+            name: name.trim(),
+            ...(amount && amount > 0 ? { amount } : {}),
+            ...(unit?.trim() ? { unit: unit.trim() } : {}),
+          },
+        ]),
       addRecipe: (recipeId, servings) =>
         setEntries((current) => {
           const entry = { recipeId, servings: Math.max(1, servings) };
@@ -249,6 +276,8 @@ export function useBasket(): BasketValue {
             : [...current, entry];
         }),
       clear: () => update(() => ({ basket: emptyBasket() })),
+      removeManualItem: (id) =>
+        setManualItems((current) => current.filter((item) => item.id !== id)),
       removeRecipe: (recipeId) =>
         setEntries((current) =>
           current.filter((entry) => entry.recipeId !== recipeId)

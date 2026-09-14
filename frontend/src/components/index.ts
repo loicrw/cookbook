@@ -5,6 +5,7 @@ export type { ConfirmAction } from "./ConfirmDialog";
 export { FloatingButton } from "./FloatingButton";
 export { FontSizeSlider } from "./FontSizeSlider";
 export { LoadingScreen } from "./LoadingScreen";
+export { ManualItemInput } from "./ManualItemInput";
 export { RecipeCard } from "./RecipeCard";
 export { RecipeForm } from "./RecipeForm";
 export { Stepper } from "./Stepper";

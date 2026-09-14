@@ -44,9 +44,9 @@ app/                          # Routes only (expo-router file-based routing)
 └── (tabs)/                   # The bottom bar
     ├── _layout.tsx           # Tab definitions
     ├── index.tsx             # Recipes overview (initial route)
-    ├── basket.tsx            # Shopping list gathered from recipes
+    ├── basket.tsx            # Shopping list, from recipes and added by hand
     ├── add.tsx               # Add a recipe
-    ├── settings.tsx          # Letter size, name, import, export
+    ├── settings.tsx          # Letter size, name, and the Data section
     └── recipe/               # Hidden from the bar, so the bar stays visible
         ├── _layout.tsx       # Stack nested inside the tabs
         └── [id]/
@@ -61,6 +61,7 @@ src/
 │   ├── FloatingButton.tsx    # Round icon button over the content
 │   ├── FontSizeSlider.tsx    # One stop per letter size, drawn as a ruler
 │   ├── LoadingScreen.tsx     # Shown until storage has been read
+│   ├── ManualItemInput.tsx   # Puts one line on the basket by hand
 │   ├── RecipeCard.tsx
 │   ├── RecipeForm.tsx        # Shared by the add and edit screens
 │   ├── Stepper.tsx           # A number with a minus and a plus
@@ -69,6 +70,7 @@ src/
 │   ├── Text.tsx              # Text and TextInput that follow the letter size
 │   └── index.ts              # Component exports
 ├── constants/
+│   ├── recipeTemplate.ts     # The import format, described for an LLM
 │   ├── settings.ts           # The letter sizes on offer
 │   └── storage.ts            # Storage key and data schema version
 ├── context/
@@ -100,13 +102,34 @@ narrower hooks rather than the whole payload:
 - `useSettings()`: the author name and the `fontScale` to apply to text
 
 The basket holds one entry per recipe with the servings to shop for, and never
-holds ingredients: those are derived from the cookbook on every render, so
-editing a recipe updates the list with it.
+holds their ingredients: those are derived from the cookbook on every render, so
+editing a recipe updates the list with it. Lines added by hand belong to no
+recipe, so those are stored, in `manualItems`.
+
+A tick is stored as a key rather than a position, so the two kinds of line are
+told apart by which key they use: `ingredientKey` for a line from a recipe,
+`manualItemKey` for one added by hand. `basketKeys` is the set of both, and
+`prunedBasket` uses it to drop the ticks of lines a change has taken off the
+list. Anything that changes the basket goes through it.
 
 Anything read back from storage passes through `normalizeAppData`, which fills in
 fields older builds never wrote, migrates the basket from the shape that had no
 servings, moves a letter size stored before v5 onto the stop that matches it, and
 drops entries whose recipe is gone.
+
+## Importing and exporting
+
+Settings > Data covers all three file operations, in `src/utils/fileOperations.ts`:
+
+- **Export recipes** writes the cookbook as JSON, stamped with `DATA_VERSION`.
+- **Import recipes** reads a file back. `parseRecipes` accepts a full export
+  payload or a bare array of recipes and normalises every one of them, so a
+  hand-written or generated file does not have to be exact.
+- **Export recipe template** writes `RECIPE_TEMPLATE` from
+  `src/constants/recipeTemplate.ts`: the import format described field by field,
+  with a filled-in example, for handing to an LLM asked to write a cookbook file.
+  It is built from `DATA_VERSION` so the version it quotes cannot drift. Keep it
+  in step with `normalizeRecipe`, which is what actually reads an import.
 
 ## Text and the letter size
 

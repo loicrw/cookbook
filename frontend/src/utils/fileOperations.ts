@@ -4,6 +4,10 @@ import * as Sharing from "expo-sharing";
 import { Platform } from "react-native";
 import { Recipe, RecipeExport } from "../types/app";
 import { DATA_VERSION } from "../constants/storage";
+import {
+  RECIPE_TEMPLATE,
+  RECIPE_TEMPLATE_FILE_NAME,
+} from "../constants/recipeTemplate";
 import { parseRecipes, RecipeParseError } from "./recipes";
 
 function exportFileName(): string {
@@ -22,22 +26,36 @@ export async function exportRecipes(recipes: Recipe[]): Promise<void> {
     recipes,
     version: DATA_VERSION,
   };
-  const json = JSON.stringify(payload, null, 2);
 
+  await writeJson(JSON.stringify(payload, null, 2), exportFileName());
+}
+
+/**
+ * Writes the import format's own description to a file, for handing to an LLM
+ * that is being asked to write a cookbook file.
+ */
+export async function exportRecipeTemplate(): Promise<void> {
+  await writeJson(
+    JSON.stringify(RECIPE_TEMPLATE, null, 2),
+    RECIPE_TEMPLATE_FILE_NAME
+  );
+}
+
+async function writeJson(json: string, fileName: string): Promise<void> {
   if (Platform.OS === "web") {
-    exportWeb(json);
+    exportWeb(json, fileName);
   } else {
-    await exportNative(json);
+    await exportNative(json, fileName);
   }
 }
 
-function exportWeb(json: string): void {
+function exportWeb(json: string, fileName: string): void {
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = exportFileName();
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -45,8 +63,8 @@ function exportWeb(json: string): void {
   URL.revokeObjectURL(url);
 }
 
-async function exportNative(json: string): Promise<void> {
-  const fileUri = FileSystem.documentDirectory + exportFileName();
+async function exportNative(json: string, fileName: string): Promise<void> {
+  const fileUri = FileSystem.documentDirectory + fileName;
 
   await FileSystem.writeAsStringAsync(fileUri, json);
   if (await Sharing.isAvailableAsync()) {

@@ -13,7 +13,11 @@ import { useRecipes, useSettings } from "@/src/context/AppDataContext";
 import { useNotice } from "@/src/context/NoticeContext";
 import { DATA_VERSION } from "@/src/constants/storage";
 import { FONT_SIZE_LEVELS } from "@/src/constants/settings";
-import { exportRecipes, importRecipes } from "@/src/utils/fileOperations";
+import {
+  exportRecipes,
+  exportRecipeTemplate,
+  importRecipes,
+} from "@/src/utils/fileOperations";
 import { RecipeParseError } from "@/src/utils/recipes";
 import { plural } from "@/src/utils/text";
 import { spacing, styles, theme } from "@/src/styles/common";
@@ -32,6 +36,20 @@ export default function SettingsScreen() {
     setBusy(true);
     try {
       await exportRecipes(recipes);
+    } catch (error) {
+      notify(
+        "Export failed",
+        error instanceof Error ? error.message : "Please try again."
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleExportTemplate = async () => {
+    setBusy(true);
+    try {
+      await exportRecipeTemplate();
     } catch (error) {
       notify(
         "Export failed",
@@ -128,8 +146,10 @@ export default function SettingsScreen() {
           Names your cookbook on the home screen and is set as the author of new
           recipes. Recipes you have already saved keep their own author.
         </Text>
+      </View>
 
-        <View style={settingsStyles.divider} />
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Data</Text>
 
         <Text style={[styles.mutedText, settingsStyles.help]}>
           Recipes live on this device only. Export a JSON copy to back them up or
@@ -149,6 +169,20 @@ export default function SettingsScreen() {
             onPress={handleExport}
           />
         </View>
+
+        <View style={settingsStyles.divider} />
+
+        <Text style={[styles.mutedText, settingsStyles.help]}>
+          The template describes the file format an import expects. Hand it to an
+          assistant and it can write a cookbook file you can import here.
+        </Text>
+
+        <AppButton
+          disabled={busy}
+          label="Export recipe template (for agents)"
+          onPress={handleExportTemplate}
+          variant="secondary"
+        />
       </View>
 
       <View style={styles.card}>
