@@ -1,5 +1,15 @@
 import React from "react";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { StyleSheet, StyleProp, ViewStyle } from "react-native";
+/**
+ * The minimum of a test instance's tree needed to walk up to a laid-out
+ * ancestor. The project has no types for react-test-renderer, so a structural
+ * type keeps the import away.
+ */
+type TestInstance = {
+  props: { style?: unknown };
+  parent: TestInstance | null;
+};
 import { resetRouterMock } from "@/src/test-utils/router";
 import SettingsScreen from "@/app/(tabs)/settings";
 import { DATA_VERSION } from "@/src/constants/storage";
@@ -283,6 +293,56 @@ describe("the settings screen", () => {
           )
         ).toBeVisible()
       );
+    });
+  });
+
+  describe("the data section", () => {
+    // The nearest ancestor with a flexDirection is the container the buttons
+    // share. (Compared by identity of that ancestor, never by toBe on the
+    // raw test instances, whose diff printer can blow up the heap.)
+    function rowContainer(node: TestInstance): TestInstance {
+      let current = node;
+      let walked = 0;
+      while (walked < 20) {
+        const style = StyleSheet.flatten(
+          current.props.style as StyleProp<ViewStyle>
+        ) as ViewStyle | undefined;
+        if (style?.flexDirection) return current;
+        if (!current.parent) {
+          throw new Error("No laid-out ancestor found");
+        }
+        current = current.parent;
+        walked += 1;
+      }
+      throw new Error("No laid-out ancestor found");
+    }
+
+    function buttonStyle(node: TestInstance): ViewStyle {
+      const style = node.props.style as StyleProp<ViewStyle> | ((state: { pressed: boolean }) => StyleProp<ViewStyle>);
+      const resolved =
+        typeof style === "function" ? style({ pressed: false }) : style;
+      return StyleSheet.flatten(resolved) as ViewStyle;
+    }
+
+    it("places the import and export buttons side by side on one row", async () => {
+      await renderSettings([bread]);
+
+      const importButton = screen.getByRole("button", {
+        name: "Import recipes",
+      }) as unknown as TestInstance;
+      const exportButton = screen.getByRole("button", {
+        name: "Export recipes",
+      }) as unknown as TestInstance;
+
+      expect(rowContainer(importButton)).toBe(rowContainer(exportButton));
+      expect(buttonStyle(rowContainer(importButton)).flexDirection).toBe(
+        "row"
+      );
+
+      // Both buttons stretch to fill half the row, so neither takes more
+      // space than the other.
+      expect(buttonStyle(importButton).flex).toBe(1);
+      expect(buttonStyle(exportButton).flex).toBe(1);
     });
   });
 
