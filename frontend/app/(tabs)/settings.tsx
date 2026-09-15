@@ -161,12 +161,14 @@ export default function SettingsScreen() {
             disabled={busy}
             label="Import recipes"
             onPress={handleImport}
+            style={settingsStyles.actionButton}
             variant="secondary"
           />
           <AppButton
             disabled={busy || recipes.length === 0}
             label="Export recipes"
             onPress={handleExport}
+            style={settingsStyles.actionButton}
           />
         </View>
 
@@ -264,7 +266,11 @@ const settingsStyles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     marginVertical: spacing.lg,
   },
+  actionButton: {
+    flex: 1,
+  },
   actions: {
+    flexDirection: "row",
     gap: spacing.sm,
   },
   preferenceHeader: {
