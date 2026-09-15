@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react-native";
 import { resetRouterMock } from "@/src/test-utils/router";
 import SettingsScreen from "@/app/(tabs)/settings";
 import { DATA_VERSION } from "@/src/constants/storage";
@@ -97,6 +97,22 @@ describe("the settings screen", () => {
       expect(
         screen.getByText(/set as the author of new\s+recipes/)
       ).toBeVisible();
+    });
+  });
+
+  describe("the data section", () => {
+    it("sits import and export beside each other on one row", async () => {
+      await renderSettings();
+
+      const row = screen.getByTestId("data-actions");
+
+      expect(row).toHaveStyle({ flexDirection: "row" });
+      expect(
+        within(row).getByRole("button", { name: "Import recipes" })
+      ).toHaveStyle({ flex: 1 });
+      expect(
+        within(row).getByRole("button", { name: "Export recipes" })
+      ).toHaveStyle({ flex: 1 });
     });
   });
 

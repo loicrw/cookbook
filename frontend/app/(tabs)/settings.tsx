@@ -156,17 +156,19 @@ export default function SettingsScreen() {
           move them to another device.
         </Text>
 
-        <View style={settingsStyles.actions}>
+        <View style={settingsStyles.actions} testID="data-actions">
           <AppButton
             disabled={busy}
             label="Import recipes"
             onPress={handleImport}
+            style={settingsStyles.actionButton}
             variant="secondary"
           />
           <AppButton
             disabled={busy || recipes.length === 0}
             label="Export recipes"
             onPress={handleExport}
+            style={settingsStyles.actionButton}
           />
         </View>
 
@@ -265,7 +267,14 @@ const settingsStyles = StyleSheet.create({
     marginVertical: spacing.lg,
   },
   actions: {
+    flexDirection: "row",
     gap: spacing.sm,
+  },
+  actionButton: {
+    flex: 1,
+    // The shared button padding is too wide for half a card, and would wrap
+    // the label at small screen widths.
+    paddingHorizontal: spacing.md,
   },
   preferenceHeader: {
     alignItems: "center",
